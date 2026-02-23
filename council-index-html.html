@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Council of Ethical Ball</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Georgia', 'Times New Roman', serif; background: #1a1410; }
+    @keyframes gavelSlam { 0%{transform:rotate(-45deg) scale(1.5);opacity:0} 50%{transform:rotate(5deg) scale(1);opacity:1} 100%{transform:rotate(0deg) scale(1);opacity:1} }
+    @keyframes fadeOut { 0%{opacity:1} 70%{opacity:1} 100%{opacity:0;pointer-events:none} }
+    @keyframes pulse { 0%,100%{opacity:0.7;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const BYLAWS = {
+      "Article I: League Structure": {
+        "1.1": { title: "League Name", text: "Jommy Swallows" },
+        "1.2": { title: "League Composition", text: "The league shall consist of seven (7) teams. Each team shall be controlled by one owner/manager. All teams must represent official NFL franchises available in Madden 26. Team assignments have been previously determined." }
+      },
+      "Article II: League Membership": {
+        "2.1": { title: "Team Ownership", text: "Each member shall control one team for the duration of the season." },
+        "2.2": { title: "Membership Requirements", text: "Members must schedule and play games in a timely manner." },
+        "2.3": { title: "Removal and Replacement", text: "Members may only be removed by true majority vote (5 out of 7 members). Replacement owners must be approved by true majority vote. Replacement owners inherit the team as-is (roster, draft picks, cap situation)." }
+      },
+      "Article III: League Governance": {
+        "3.1": { title: "Commissioner", text: "The league shall have one (1) commissioner responsible for league administration. Commissioner duties include: enforcing league rules and bylaws, processing trades and transactions, advancing the league schedule, resolving disputes between members, and maintaining league records and standings." },
+        "3.2": { title: "Rule Changes", text: "Rule changes require simple majority vote (4 out of 7 members). Proposed rule changes must be announced one week before voting. Rule changes take effect at the start of the next season unless otherwise specified." },
+        "3.3": { title: "Dispute Resolution", text: "All disputes shall first be discussed between involved parties. Unresolved disputes shall be brought to the commissioner. Commissioner decisions may be appealed to league vote with support from two (2) members. League vote on appeals requires simple majority (4 out of 7) to overturn commissioner ruling." }
+      },
+      "Article IV: Draft Rules": {
+        "4.1": { title: "Rookie Draft", text: "Annual rookie draft is conducted through Madden 26 game mechanics. Draft order determined by Madden 26 (inverse standings). Teams may hold a maximum of ten (10) total draft picks per draft." },
+        "4.2": { title: "Draft Pick Ownership Restrictions", text: "No team may possess more than two (2) first-round draft picks in any single draft. Teams exceeding this limit must trade excess first-round picks before the draft begins. This restriction applies to all first-round picks regardless of origin (original, traded, compensatory)." },
+        "4.3": { title: "Draft Pick Trading", text: "Draft picks may be traded up to three (3) years in advance. All draft pick trades must be processed through the commissioner. Teams must maintain at least one (1) pick per draft year." }
+      },
+      "Article V: Trading Rules": {
+        "5.1": { title: "Trade Process", text: "Trades may be executed without prior approval. Members are encouraged to post trades publicly as a matter of good faith and transparency. Trades involving only players rated 82 overall or under with silver development or lower are automatically approved. All other trades are subject to league review if concerns are raised." },
+        "5.2": { title: "Trade Restrictions", text: 'No team may possess more than two (2) first-round picks (see Article IV, Section 4.2). Teams over the salary cap may not acquire players that increase cap obligations. "Fire sale" trades (dumping roster for picks) are prohibited without commissioner approval. Collusion in any form results in immediate removal.' },
+        "5.3": { title: "Tradeable Assets", text: "Players (with salary cap implications) and draft picks (current year and future years as permitted)." }
+      },
+      "Article VI: Salary Cap and Contracts": {
+        "6.1": { title: "Salary Cap Compliance", text: "All teams must remain under the Madden 26 salary cap at all times." },
+        "6.2": { title: "Contract Extensions", text: "Contract extensions follow Madden 26 game mechanics." }
+      },
+      "Article VII: Gameplay Rules": {
+        "7.1": { title: "Game Settings", text: "All games are played on All-Madden difficulty." },
+        "7.2": { title: "Disconnections", text: "If disconnect occurs in first quarter: restart the game." },
+        "7.3": { title: "Gameplay Conduct", text: 'No exploit plays. No "suicide" (intentionally losing for draft position). No running up the score (40+ point differential).' }
+      },
+      "Article VIII: Penalties and Enforcement": {
+        "8.1": { title: "Warning System", text: "First violation: Official warning. Third violation: Removal from league." },
+        "8.2": { title: "Appeals", text: "Members may appeal penalties to league vote. Appeals require support from two (2) members to initiate. Simple majority vote (4 out of 7) required to overturn." }
+      },
+      "Article IX: League Communication": {
+        "9.1": { title: "Official Communication Channels", text: "Primary platform: iMessage. All trade announcements, schedule coordination, and rule discussions occur via iMessage." },
+        "9.2": { title: "Response Requirements", text: "Commissioner communications require response within reasonable timeframe." }
+      },
+      "Article X: Amendments": {
+        "10.1": { title: "Amendment Process", text: "These bylaws may be amended by simple majority vote (4 out of 7 members). Amendment proposals must be submitted to commissioner in writing. Voting period: one (1) week. Amendments take effect at the start of the next season unless otherwise specified." },
+        "10.2": { title: "Emergency Rule Changes", text: "Commissioner may implement emergency rules for unforeseen circumstances. Emergency rules require league ratification by simple majority within two (2) weeks. Emergency rules expire if not ratified." }
+      }
+    };
+
+    const ELDERS = [
+      { name: "Touchdownius Maximus", title: "Imperator of the Endzone", emoji: "🏛️", color: "#d4a862" },
+      { name: "Blitzocrates", title: "Philosopher of the Pass Rush", emoji: "📜", color: "#c4956a" },
+      { name: "Punt-ius Pilate", title: "Judge of Fourth Down", emoji: "🏺", color: "#b8860b" },
+    ];
+
+    function findRelevantSections(question) {
+      const q = question.toLowerCase();
+      const results = [];
+      const keywords = {
+        trade: ["5.1","5.2","5.3","4.2","4.3"], draft: ["4.1","4.2","4.3"],
+        "first round": ["4.2","5.2"], "first-round": ["4.2","5.2"],
+        pick: ["4.1","4.2","4.3","5.3"], cap: ["5.2","6.1","6.2"],
+        salary: ["5.2","6.1","6.2"], contract: ["6.1","6.2"],
+        remove: ["2.3","8.1"], kick: ["2.3","8.1"],
+        vote: ["2.3","3.2","3.3","8.2","10.1"],
+        commissioner: ["3.1","3.2","3.3","10.2"], commish: ["3.1","3.2","3.3","10.2"],
+        dispute: ["3.3","8.2"], appeal: ["3.3","8.2"],
+        rule: ["3.2","10.1","10.2"], amend: ["10.1","10.2"],
+        change: ["3.2","10.1","10.2"], disconnect: ["7.2"], dc: ["7.2"],
+        exploit: ["7.3"], cheat: ["7.3","5.2","8.1"],
+        score: ["7.3"], "run up": ["7.3"], running: ["7.3"],
+        tank: ["7.3"], suicide: ["7.3"], lose: ["7.3"],
+        warning: ["8.1"], penalty: ["8.1","8.2"], punish: ["8.1","8.2"],
+        violation: ["8.1"], collusion: ["5.2"], "fire sale": ["5.2"],
+        imessage: ["9.1"], message: ["9.1","9.2"],
+        communicate: ["9.1","9.2"], respond: ["9.2"],
+        team: ["1.2","2.1"], member: ["2.1","2.2","2.3"], replace: ["2.3"],
+        "all-madden": ["7.1"], "all madden": ["7.1"],
+        difficulty: ["7.1"], setting: ["7.1"], emergency: ["10.2"],
+        "82": ["5.1"], silver: ["5.1"], auto: ["5.1"],
+        game: ["7.1","7.2","7.3"], play: ["2.2","7.1","7.3"],
+      };
+      const matched = new Set();
+      for (const [kw, sections] of Object.entries(keywords)) {
+        if (q.includes(kw)) sections.forEach(s => matched.add(s));
+      }
+      if (matched.size === 0) { matched.add("3.1"); matched.add("3.3"); }
+      for (const [article, sections] of Object.entries(BYLAWS)) {
+        for (const [num, data] of Object.entries(sections)) {
+          if (matched.has(num)) results.push({ article, section: num, ...data });
+        }
+      }
+      return results;
+    }
+
+    function generateRulings(question, sections) {
+      const q = question.toLowerCase();
+      let verdict = "PERMITTED", reasoning = [], dissent = null;
+
+      if (q.includes("three") && q.includes("first") && (q.includes("pick") || q.includes("round"))) {
+        verdict = "FORBIDDEN";
+        reasoning = ["Section 4.2 explicitly limits any team to a maximum of two (2) first-round picks in any single draft.", "This restriction is absolute — it applies regardless of how the picks were obtained (original, traded, or compensatory).", "The offending team must trade excess first-round picks before the draft begins."];
+      } else if (q.includes("exploit")) {
+        verdict = "FORBIDDEN";
+        reasoning = ["Section 7.3 explicitly prohibits exploit plays.", "This constitutes a gameplay conduct violation subject to the warning system in Section 8.1.", "First offense: official warning. Third violation leads to removal from league."];
+      } else if (q.includes("run") && q.includes("score")) {
+        verdict = "FORBIDDEN";
+        reasoning = ["Section 7.3 prohibits running up the score, defined as achieving a 40+ point differential.", "This is a sportsmanship violation under gameplay conduct rules.", "Violators are subject to the progressive warning system in Section 8.1."];
+      } else if (q.includes("tank") || (q.includes("lose") && q.includes("purpose")) || (q.includes("intentional") && q.includes("los"))) {
+        verdict = "FORBIDDEN";
+        reasoning = ["Section 7.3 prohibits 'suicide' — intentionally losing for draft position.", "This undermines competitive integrity and is treated as a serious violation.", "Subject to penalties under Section 8.1's warning system."];
+      } else if (q.includes("collusion") || q.includes("collude")) {
+        verdict = "FORBIDDEN";
+        reasoning = ["Section 5.2 is unequivocal: 'Collusion in any form results in immediate removal.'", "This is the most severe penalty in the bylaws — no warnings, no appeals process specified.", "The Council views this as the gravest possible offense against the league."];
+      } else if (q.includes("fire sale") || (q.includes("dump") && q.includes("roster"))) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 5.2 prohibits 'fire sale' trades (dumping roster for picks) WITHOUT commissioner approval.", "This means it is possible — but only with explicit commissioner sign-off.", "The commissioner has discretion to evaluate whether a trade pattern constitutes a fire sale."];
+      } else if ((q.includes("trade") && q.includes("82")) || (q.includes("trade") && q.includes("silver"))) {
+        verdict = "PERMITTED";
+        reasoning = ["Section 5.1 states that trades involving only players rated 82 overall or under with silver development or lower are automatically approved.", "No league review is needed for these transactions.", "However, members are still encouraged to post trades publicly as good faith."];
+      } else if (q.includes("trade") && !q.includes("draft")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 5.1 allows trades to be executed without prior approval.", "However, trades involving players above 82 OVR or above silver development are subject to league review if concerns are raised.", "All trades must comply with Section 5.2 restrictions (cap compliance, no fire sales, no collusion, max 2 first-round picks)."];
+        dissent = "I would remind the Council that transparency is encouraged but not mandated — 'good faith' is aspirational, not enforceable.";
+      } else if (q.includes("disconnect") || q.includes("dc")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 7.2 states: if disconnect occurs in the first quarter, restart the game.", "The bylaws are SILENT on disconnects occurring after the first quarter.", "This is a gap in the rules. The Council recommends this be addressed via the amendment process in Article X."];
+        dissent = "The silence of the bylaws on later disconnects should be interpreted as commissioner discretion under Section 3.1.";
+      } else if (q.includes("remove") || q.includes("kick")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 2.3 requires a true majority vote of 5 out of 7 members for removal.", "This is a higher threshold than most other votes (which require only 4 of 7).", "Section 8.1 also provides an automatic path: three violations result in removal."];
+      } else if (q.includes("appeal")) {
+        verdict = "PERMITTED";
+        reasoning = ["Section 3.3 and 8.2 both establish appeal rights.", "Appeals require support from two (2) members to initiate.", "A simple majority vote (4 out of 7) is required to overturn a commissioner ruling or penalty."];
+      } else if (q.includes("emergency")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 10.2 grants the commissioner power to implement emergency rules for unforeseen circumstances.", "However, emergency rules MUST be ratified by simple majority within two (2) weeks.", "If not ratified, emergency rules automatically expire."];
+      } else if (q.includes("change") && q.includes("rule")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 3.2 requires simple majority vote (4 out of 7) for rule changes.", "Changes must be announced one week before voting.", "Changes take effect at the start of the next season unless otherwise specified."];
+      } else {
+        verdict = "UNDER REVIEW";
+        reasoning = ["The Council has reviewed the relevant sections of the bylaws.", "This matter requires interpretation — the bylaws do not explicitly address this exact scenario.", "The Council recommends bringing this to the commissioner for a ruling under Section 3.1, with the option to appeal per Section 3.3."];
+        dissent = "When the bylaws are silent, the spirit of competitive fairness should guide all decisions.";
+      }
+      return { verdict, reasoning, dissent, sections };
+    }
+
+    function App() {
+      const [view, setView] = useState("council");
+      const [question, setQuestion] = useState("");
+      const [ruling, setRuling] = useState(null);
+      const [isDeliberating, setIsDeliberating] = useState(false);
+      const [expandedArticle, setExpandedArticle] = useState(null);
+      const [rulingHistory, setRulingHistory] = useState([]);
+      const [showGavel, setShowGavel] = useState(false);
+      const [loreEntries, setLoreEntries] = useState([]);
+      const [loreAuthor, setLoreAuthor] = useState("");
+      const [loreTeam, setLoreTeam] = useState("");
+      const [loreText, setLoreText] = useState("");
+      const [loreView, setLoreView] = useState("feed");
+      const resultRef = useRef(null);
+
+      const submitQuestion = () => {
+        if (!question.trim()) return;
+        setIsDeliberating(true); setRuling(null); setShowGavel(false);
+        setTimeout(() => {
+          const sections = findRelevantSections(question);
+          const result = generateRulings(question, sections);
+          setRuling({ question: question.trim(), ...result });
+          setRulingHistory(prev => [{ question: question.trim(), ...result, timestamp: new Date() }, ...prev]);
+          setIsDeliberating(false); setShowGavel(true);
+          setTimeout(() => setShowGavel(false), 1500);
+        }, 2200);
+      };
+
+      const submitLore = () => {
+        if (!loreAuthor.trim() || !loreTeam.trim() || !loreText.trim()) return;
+        setLoreEntries(prev => [{ id: Date.now(), author: loreAuthor.trim(), team: loreTeam.trim(), text: loreText.trim(), timestamp: new Date() }, ...prev]);
+        setLoreAuthor(""); setLoreTeam(""); setLoreText(""); setLoreView("feed");
+      };
+
+      const verdictStyles = {
+        PERMITTED: { bg: "linear-gradient(135deg, #2d3a2a, #3a4a34)", border: "#7a9e6e", label: "✅ PERMITTED", glow: "0 0 30px rgba(122,158,110,0.2)" },
+        FORBIDDEN: { bg: "linear-gradient(135deg, #4a2020, #5c2a2a)", border: "#c4564a", label: "🚫 FORBIDDEN", glow: "0 0 30px rgba(196,86,74,0.2)" },
+        CONDITIONAL: { bg: "linear-gradient(135deg, #3d3220, #4a3c28)", border: "#d4a862", label: "⚠️ CONDITIONAL", glow: "0 0 30px rgba(212,168,98,0.2)" },
+        "UNDER REVIEW": { bg: "linear-gradient(135deg, #2a2a3d, #34345a)", border: "#8e8eb8", label: "🔍 UNDER REVIEW", glow: "0 0 30px rgba(142,142,184,0.2)" },
+      };
+
+      useEffect(() => {
+        if (ruling && resultRef.current) resultRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, [ruling]);
+
+      const c = { cream: "#f5e6c8", gold: "#d4a862", dark: "#1a1410", mid: "#2a2018", light: "#3a2e22", parch: "#e8d5b0", faded: "#a0907a", body: "#d4c4a8" };
+
+      const inputStyle = { width: "100%", boxSizing: "border-box", padding: 12, borderRadius: 10, border: `1px solid ${c.light}`, background: c.dark, color: c.cream, fontSize: 14, fontFamily: "'Georgia', serif", outline: "none" };
+
+      const formatDate = (d) => {
+        const diff = new Date() - d;
+        if (diff < 60000) return "Just now";
+        if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+        if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
+        return d.toLocaleDateString();
+      };
+
+      return (
+        <div style={{ minHeight: "100vh", background: `linear-gradient(180deg, ${c.dark} 0%, #1e1812 40%, #16120e 100%)`, color: c.body, fontFamily: "'Georgia', 'Times New Roman', serif" }}>
+          {showGavel && (
+            <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(10,8,5,0.7)", animation: "fadeOut 1.5s forwards" }}>
+              <div style={{ fontSize: 120, animation: "gavelSlam 0.4s ease-out" }}>⚡</div>
+            </div>
+          )}
+
+          <div style={{ maxWidth: 900, margin: "0 auto", padding: "20px 16px" }}>
+            <div style={{ textAlign: "center", marginBottom: 32, paddingTop: 24 }}>
+              <div style={{ fontSize: 14, color: c.faded, letterSpacing: 6, textTransform: "uppercase", marginBottom: 8 }}>⟡ Madden XXVI ⟡</div>
+              <h1 style={{ fontSize: 32, fontWeight: 700, color: c.cream, margin: 0, letterSpacing: 3, textTransform: "uppercase" }}>Council of Ethical Ball</h1>
+              <div style={{ width: 120, height: 2, background: `linear-gradient(90deg, transparent, ${c.gold}, transparent)`, margin: "12px auto 8px" }} />
+              <p style={{ color: c.faded, fontSize: 13, margin: 0, fontStyle: "italic", letterSpacing: 1 }}>Where the sacred bylaws are upheld and justice is rendered</p>
+            </div>
+
+            <div style={{ display: "flex", gap: 0, marginBottom: 32, borderRadius: 12, overflow: "hidden", border: `1px solid ${c.light}` }}>
+              {[
+                { key: "council", label: "🏛️ The Senate", desc: "Seek Judgment" },
+                { key: "bylaws", label: "📜 Sacred Texts", desc: "The Codex" },
+                { key: "lore", label: "🕯️ League Lore", desc: "The Chronicles" },
+                { key: "history", label: "🏺 Annals", desc: "Past Decrees" },
+              ].map(tab => (
+                <button key={tab.key} onClick={() => setView(tab.key)} style={{
+                  flex: 1, padding: "14px 6px", border: "none", cursor: "pointer", transition: "all 0.3s",
+                  background: view === tab.key ? `linear-gradient(135deg, ${c.gold}15, ${c.mid})` : c.dark,
+                  borderBottom: view === tab.key ? `2px solid ${c.gold}` : "2px solid transparent",
+                  color: view === tab.key ? c.cream : c.faded, fontFamily: "'Georgia', serif",
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>{tab.label}</div>
+                  <div style={{ fontSize: 10, marginTop: 2, fontStyle: "italic" }}>{tab.desc}</div>
+                </button>
+              ))}
+            </div>
+
+            {view === "council" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 24, marginBottom: 32 }}>
+                  {ELDERS.map(e => (
+                    <div key={e.name} style={{ textAlign: "center", opacity: isDeliberating ? 1 : 0.7, transition: "all 0.5s" }}>
+                      <div style={{
+                        width: 76, height: 76, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 32, margin: "0 auto 8px",
+                        background: `radial-gradient(circle, ${e.color}22, ${c.dark})`,
+                        border: `2px solid ${e.color}88`,
+                        boxShadow: isDeliberating ? `0 0 24px ${e.color}44` : "none",
+                        animation: isDeliberating ? "pulse 1.5s infinite" : "none",
+                      }}>{e.emoji}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: e.color }}>{e.name}</div>
+                      <div style={{ fontSize: 10, color: c.faded, fontStyle: "italic" }}>{e.title}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ background: c.mid, borderRadius: 16, padding: 24, border: `1px solid ${c.light}`, marginBottom: 24 }}>
+                  <label style={{ display: "block", fontSize: 12, color: c.gold, marginBottom: 10, textTransform: "uppercase", letterSpacing: 3, fontWeight: 600 }}>Present Your Case Before the Council</label>
+                  <textarea value={question} onChange={e => setQuestion(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submitQuestion(); }}}
+                    placeholder="e.g. Can I trade for a third first-round pick?"
+                    rows={3} style={{ ...inputStyle, fontSize: 15, resize: "vertical" }} />
+                  <button onClick={submitQuestion} disabled={isDeliberating || !question.trim()} style={{
+                    marginTop: 12, width: "100%", padding: "14px 24px", borderRadius: 10, border: "none",
+                    background: isDeliberating ? c.light : `linear-gradient(135deg, ${c.gold}, #b8860b)`,
+                    color: isDeliberating ? c.faded : c.dark, fontWeight: 700, fontSize: 15,
+                    cursor: isDeliberating ? "default" : "pointer", fontFamily: "'Georgia', serif",
+                    letterSpacing: 1, textTransform: "uppercase", transition: "all 0.3s",
+                  }}>{isDeliberating ? "🏛️ The Council Deliberates..." : "⚖️ Summon the Council"}</button>
+                </div>
+
+                {ruling && (
+                  <div ref={resultRef} style={{ animation: "slideUp 0.5s ease-out" }}>
+                    <div style={{ background: verdictStyles[ruling.verdict].bg, border: `2px solid ${verdictStyles[ruling.verdict].border}`, borderRadius: 16, padding: 24, marginBottom: 16, textAlign: "center", boxShadow: verdictStyles[ruling.verdict].glow }}>
+                      <div style={{ fontSize: 11, color: c.faded, textTransform: "uppercase", letterSpacing: 4, marginBottom: 4 }}>The Council Has Decreed</div>
+                      <div style={{ fontSize: 28, fontWeight: 800, letterSpacing: 2, color: c.cream }}>{verdictStyles[ruling.verdict].label}</div>
+                      <div style={{ fontSize: 13, color: c.parch, marginTop: 8, fontStyle: "italic" }}>"{ruling.question}"</div>
+                    </div>
+                    <div style={{ background: c.mid, borderRadius: 16, padding: 24, border: `1px solid ${c.light}`, marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, color: c.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16, fontWeight: 600 }}>📜 The Council's Reasoning</div>
+                      {ruling.reasoning.map((r, i) => (
+                        <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12, alignItems: "flex-start" }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: ELDERS[i % 3].color + "18", border: `1px solid ${ELDERS[i % 3].color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>{ELDERS[i % 3].emoji}</div>
+                          <div style={{ fontSize: 14, color: c.body, lineHeight: 1.7, paddingTop: 3 }}>{r}</div>
+                        </div>
+                      ))}
+                      {ruling.dissent && (
+                        <div style={{ marginTop: 16, padding: 14, background: c.dark, borderRadius: 10, borderLeft: "3px solid #8e6b4a" }}>
+                          <div style={{ fontSize: 11, color: "#c4956a", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>⚡ Dissenting Opinion</div>
+                          <div style={{ fontSize: 13, color: c.faded, fontStyle: "italic" }}>{ruling.dissent}</div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ background: c.mid, borderRadius: 16, padding: 24, border: `1px solid ${c.light}` }}>
+                      <div style={{ fontSize: 13, color: c.gold, textTransform: "uppercase", letterSpacing: 2, marginBottom: 16, fontWeight: 600 }}>📖 Cited Scrolls</div>
+                      {ruling.sections.map((s, i) => (
+                        <div key={i} style={{ padding: 12, background: c.dark, borderRadius: 10, marginBottom: 8, borderLeft: `3px solid ${c.light}` }}>
+                          <div style={{ fontSize: 12, color: c.gold, fontWeight: 700 }}>Section {s.section} — {s.title}</div>
+                          <div style={{ fontSize: 13, color: c.faded, marginTop: 4, lineHeight: 1.6 }}>{s.text}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!ruling && !isDeliberating && (
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 11, color: c.faded, textTransform: "uppercase", letterSpacing: 3, marginBottom: 12, textAlign: "center", fontStyle: "italic" }}>Matters for Consideration</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      {["Can I have 3 first-round picks?","Is using an exploit play allowed?","Can I dump my roster for picks?","What happens if we disconnect in Q2?","How do I appeal a commissioner decision?","Can I trade a player rated 80 OVR without review?"].map(ex => (
+                        <button key={ex} onClick={() => setQuestion(ex)} style={{
+                          padding: "10px 12px", background: c.dark, border: `1px solid ${c.light}`, borderRadius: 10,
+                          color: c.faded, fontSize: 12, cursor: "pointer", textAlign: "left", fontFamily: "'Georgia', serif", transition: "all 0.2s",
+                        }}
+                        onMouseEnter={e => { e.target.style.borderColor = c.gold; e.target.style.color = c.cream; }}
+                        onMouseLeave={e => { e.target.style.borderColor = c.light; e.target.style.color = c.faded; }}
+                        >{ex}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {view === "bylaws" && (
+              <div>
+                <div style={{ textAlign: "center", marginBottom: 24 }}>
+                  <div style={{ fontSize: 12, color: c.gold, textTransform: "uppercase", letterSpacing: 4, fontWeight: 600 }}>The Sacred Codex</div>
+                  <div style={{ fontSize: 11, color: c.faded, marginTop: 4, fontStyle: "italic" }}>League Bylaws · Version I · Madden XXVI</div>
+                </div>
+                {Object.entries(BYLAWS).map(([article, sections]) => (
+                  <div key={article} style={{ marginBottom: 8 }}>
+                    <button onClick={() => setExpandedArticle(expandedArticle === article ? null : article)} style={{
+                      width: "100%", padding: "14px 16px", background: expandedArticle === article ? c.light : c.mid,
+                      border: `1px solid ${c.light}`, borderRadius: expandedArticle === article ? "12px 12px 0 0" : 12,
+                      color: c.cream, fontSize: 14, fontWeight: 700, cursor: "pointer", textAlign: "left",
+                      fontFamily: "'Georgia', serif", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all 0.2s",
+                    }}>
+                      <span>{article}</span>
+                      <span style={{ fontSize: 18, transition: "transform 0.2s", transform: expandedArticle === article ? "rotate(180deg)" : "none", color: c.gold }}>▾</span>
+                    </button>
+                    {expandedArticle === article && (
+                      <div style={{ background: c.mid, border: `1px solid ${c.light}`, borderTop: "none", borderRadius: "0 0 12px 12px", padding: 16 }}>
+                        {Object.entries(sections).map(([num, data]) => (
+                          <div key={num} style={{ padding: 12, marginBottom: 8, background: c.dark, borderRadius: 10, borderLeft: `3px solid ${c.gold}44` }}>
+                            <div style={{ fontSize: 12, color: c.gold, fontWeight: 700 }}>§{num} — {data.title}</div>
+                            <div style={{ fontSize: 13, color: c.body, marginTop: 6, lineHeight: 1.7 }}>{data.text}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {view === "lore" && (
+              <div>
+                <div style={{ textAlign: "center", marginBottom: 24 }}>
+                  <div style={{ fontSize: 12, color: c.gold, textTransform: "uppercase", letterSpacing: 4, fontWeight: 600 }}>The Chronicles</div>
+                  <div style={{ fontSize: 11, color: c.faded, marginTop: 4, fontStyle: "italic" }}>Tales of glory, shame, and questionable trades</div>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 24, justifyContent: "center" }}>
+                  <button onClick={() => setLoreView("feed")} style={{
+                    padding: "8px 20px", borderRadius: 8, border: `1px solid ${loreView === "feed" ? c.gold : c.light}`,
+                    background: loreView === "feed" ? `${c.gold}18` : "transparent",
+                    color: loreView === "feed" ? c.cream : c.faded, fontSize: 13, cursor: "pointer", fontFamily: "'Georgia', serif", fontWeight: 600,
+                  }}>📖 Read Lore</button>
+                  <button onClick={() => setLoreView("submit")} style={{
+                    padding: "8px 20px", borderRadius: 8, border: `1px solid ${loreView === "submit" ? c.gold : c.light}`,
+                    background: loreView === "submit" ? `${c.gold}18` : "transparent",
+                    color: loreView === "submit" ? c.cream : c.faded, fontSize: 13, cursor: "pointer", fontFamily: "'Georgia', serif", fontWeight: 600,
+                  }}>✍️ Submit Lore</button>
+                </div>
+
+                {loreView === "submit" && (
+                  <div style={{ background: c.mid, borderRadius: 16, padding: 24, border: `1px solid ${c.light}`, marginBottom: 24 }}>
+                    <div style={{ fontSize: 12, color: c.gold, textTransform: "uppercase", letterSpacing: 3, marginBottom: 16, fontWeight: 600 }}>Inscribe Your Tale</div>
+                    <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", fontSize: 11, color: c.faded, marginBottom: 6, textTransform: "uppercase", letterSpacing: 2 }}>Author</label>
+                        <input value={loreAuthor} onChange={e => setLoreAuthor(e.target.value)} placeholder="Your name" style={inputStyle} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: "block", fontSize: 11, color: c.faded, marginBottom: 6, textTransform: "uppercase", letterSpacing: 2 }}>Team</label>
+                        <input value={loreTeam} onChange={e => setLoreTeam(e.target.value)} placeholder="Your franchise" style={inputStyle} />
+                      </div>
+                    </div>
+                    <label style={{ display: "block", fontSize: 11, color: c.faded, marginBottom: 6, textTransform: "uppercase", letterSpacing: 2 }}>The Lore</label>
+                    <textarea value={loreText} onChange={e => setLoreText(e.target.value)} placeholder="Tell the tale that must be remembered..." rows={5} style={{ ...inputStyle, resize: "vertical" }} />
+                    <button onClick={submitLore} disabled={!loreAuthor.trim() || !loreTeam.trim() || !loreText.trim()} style={{
+                      marginTop: 12, width: "100%", padding: "14px 24px", borderRadius: 10, border: "none",
+                      background: (!loreAuthor.trim() || !loreTeam.trim() || !loreText.trim()) ? c.light : `linear-gradient(135deg, ${c.gold}, #b8860b)`,
+                      color: (!loreAuthor.trim() || !loreTeam.trim() || !loreText.trim()) ? c.faded : c.dark,
+                      fontWeight: 700, fontSize: 14, cursor: (!loreAuthor.trim() || !loreTeam.trim() || !loreText.trim()) ? "default" : "pointer",
+                      fontFamily: "'Georgia', serif", letterSpacing: 1, textTransform: "uppercase", transition: "all 0.3s",
+                    }}>🕯️ Etch Into the Chronicles</button>
+                  </div>
+                )}
+
+                {loreView === "feed" && (
+                  <div>
+                    {loreEntries.length === 0 ? (
+                      <div style={{ textAlign: "center", padding: 48, color: c.faded }}>
+                        <div style={{ fontSize: 48, marginBottom: 12 }}>🕯️</div>
+                        <div style={{ fontSize: 14, fontStyle: "italic" }}>The chronicles are empty. Be the first to inscribe a tale.</div>
+                      </div>
+                    ) : (
+                      loreEntries.map(entry => (
+                        <div key={entry.id} style={{ background: c.mid, borderRadius: 16, padding: 20, marginBottom: 16, border: `1px solid ${c.light}`, borderLeft: `3px solid ${c.gold}44`, animation: "slideUp 0.4s ease-out" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              <div style={{ width: 40, height: 40, borderRadius: "50%", background: `${c.gold}15`, border: `1px solid ${c.gold}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🏈</div>
+                              <div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: c.cream }}>{entry.author}</div>
+                                <div style={{ fontSize: 11, color: c.gold, fontStyle: "italic" }}>{entry.team}</div>
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 11, color: c.faded }}>{formatDate(entry.timestamp)}</div>
+                          </div>
+                          <div style={{ fontSize: 14, color: c.body, lineHeight: 1.8, paddingLeft: 50 }}>{entry.text}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {view === "history" && (
+              <div>
+                <div style={{ textAlign: "center", marginBottom: 24 }}>
+                  <div style={{ fontSize: 12, color: c.gold, textTransform: "uppercase", letterSpacing: 4, fontWeight: 600 }}>The Annals of Judgment</div>
+                  <div style={{ fontSize: 11, color: c.faded, marginTop: 4, fontStyle: "italic" }}>A record of all decrees rendered this session</div>
+                </div>
+                {rulingHistory.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: 48, color: c.faded }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>🏺</div>
+                    <div style={{ fontSize: 14, fontStyle: "italic" }}>The annals are empty. Present a case to the Council.</div>
+                  </div>
+                ) : (
+                  rulingHistory.map((r, i) => (
+                    <div key={i} style={{ background: c.mid, borderRadius: 12, padding: 16, marginBottom: 12, border: `1px solid ${verdictStyles[r.verdict].border}33`, borderLeft: `3px solid ${verdictStyles[r.verdict].border}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: verdictStyles[r.verdict].border }}>{verdictStyles[r.verdict].label}</span>
+                        <span style={{ fontSize: 11, color: c.faded }}>{r.timestamp.toLocaleTimeString()}</span>
+                      </div>
+                      <div style={{ fontSize: 14, color: c.cream, fontStyle: "italic" }}>"{r.question}"</div>
+                      <div style={{ fontSize: 12, color: c.faded, marginTop: 8 }}>{r.reasoning[0]}</div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            <div style={{ textAlign: "center", marginTop: 48, paddingBottom: 24 }}>
+              <div style={{ width: 80, height: 1, background: `linear-gradient(90deg, transparent, ${c.gold}44, transparent)`, margin: "0 auto 12px" }} />
+              <div style={{ fontSize: 10, color: c.faded, letterSpacing: 3, textTransform: "uppercase", fontStyle: "italic" }}>Council of Ethical Ball · Est. MMXXV</div>
+              <div style={{ fontSize: 9, color: `${c.faded}66`, marginTop: 4 }}>All decrees final* · *Subject to appeal per Article VIII, §8.2</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
