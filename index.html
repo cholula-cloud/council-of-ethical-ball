@@ -44,17 +44,17 @@
     const BYLAWS = {
       "Article I: League Structure": {
         "1.1": { title: "League Name", text: "Jommy Swallows" },
-        "1.2": { title: "League Composition", text: "The league shall consist of six (6) teams. Each team shall be controlled by one owner/manager. All teams must represent official NFL franchises available in Madden 26. Team assignments have been previously determined." }
+        "1.2": { title: "League Composition", text: "The league shall consist of six (6) teams. Each team shall be controlled by one owner/manager. Team assignments have been previously determined." }
       },
       "Article II: League Membership": {
         "2.1": { title: "Team Ownership", text: "Each member shall control one team for the duration of the season." },
         "2.2": { title: "Membership Requirements", text: "Members must schedule and play games in a timely manner." },
-        "2.3": { title: "Removal and Replacement", text: "Members may only be removed by true majority vote (5 out of 7 members). Replacement owners must be approved by true majority vote. Replacement owners inherit the team as-is (roster, draft picks, cap situation)." }
+        "2.3": { title: "Removal and Replacement", text: "Members may only be removed by true majority vote (4 out of 6 members). Replacement owners must be approved by true majority vote. Replacement owners inherit the team as-is (roster, draft picks, cap situation)." }
       },
       "Article III: League Governance": {
         "3.1": { title: "Commissioner", text: "The league shall have one (1) commissioner responsible for league administration. Commissioner duties include: enforcing league rules and bylaws, processing trades and transactions, advancing the league schedule, resolving disputes between members, and maintaining league records and standings." },
-        "3.2": { title: "Rule Changes", text: "Rule changes require simple majority vote (4 out of 7 members). Proposed rule changes must be announced one week before voting. Rule changes take effect at the start of the next season unless otherwise specified." },
-        "3.3": { title: "Dispute Resolution", text: "All disputes shall first be discussed between involved parties. Unresolved disputes shall be brought to the commissioner. Commissioner decisions may be appealed to league vote with support from two (2) members. League vote on appeals requires simple majority (4 out of 7) to overturn commissioner ruling." }
+        "3.2": { title: "Rule Changes", text: "Rule changes require simple majority vote (4 out of 6 members). Proposed rule changes must be announced one week before voting. Rule changes take effect at the start of the next season unless otherwise specified." },
+        "3.3": { title: "Dispute Resolution", text: "All disputes shall first be discussed between involved parties. Unresolved disputes shall be brought to the commissioner. Commissioner decisions may be appealed to league vote with support from two (2) members. League vote on appeals requires simple majority (4 out of 6) to overturn commissioner ruling." }
       },
       "Article IV: Draft Rules": {
         "4.1": { title: "Rookie Draft", text: "Annual rookie draft is conducted through Madden 26 game mechanics. Draft order determined by Madden 26 (inverse standings). Teams may hold a maximum of ten (10) total draft picks per draft." },
@@ -67,24 +67,24 @@
         "5.3": { title: "Tradeable Assets", text: "Players (with salary cap implications) and draft picks (current year and future years as permitted)." }
       },
       "Article VI: Salary Cap and Contracts": {
-        "6.1": { title: "Salary Cap Compliance", text: "All teams must remain under the Madden 26 salary cap at all times." },
+        "6.1": { title: "Cap Space Management", text: "Cap space clearing actions — including releasing or restructuring players primarily to free cap room — require majority approval (4 out of 6 members) before execution." },
         "6.2": { title: "Contract Extensions", text: "Contract extensions follow Madden 26 game mechanics." }
       },
       "Article VII: Gameplay Rules": {
         "7.1": { title: "Game Settings", text: "All games are played on All-Madden difficulty." },
         "7.2": { title: "Disconnections", text: "If disconnect occurs in first quarter: restart the game." },
-        "7.3": { title: "Gameplay Conduct", text: 'No exploit plays. No "suicide" (intentionally losing for draft position). No running up the score (40+ point differential).' }
+        "7.3": { title: "Gameplay Conduct", text: 'No exploit plays. No "suicide" (intentionally losing for draft position). No running up the score (40+ point differential).' },
+        "7.4": { title: "Position Changes", text: "Only linemen positions (offensive line and defensive line) may be changed or repositioned. No other position changes, re-positions, or position reassignments are permitted under any circumstances." }
       },
       "Article VIII: Penalties and Enforcement": {
-        "8.1": { title: "Warning System", text: "First violation: Official warning. Third violation: Removal from league." },
-        "8.2": { title: "Appeals", text: "Members may appeal penalties to league vote. Appeals require support from two (2) members to initiate. Simple majority vote (4 out of 7) required to overturn." }
+        "8.1": { title: "Appeals", text: "Members may appeal penalties to league vote. Appeals require support from two (2) members to initiate. Simple majority vote (4 out of 6) required to overturn." }
       },
       "Article IX: League Communication": {
         "9.1": { title: "Official Communication Channels", text: "Primary platform: iMessage. All trade announcements, schedule coordination, and rule discussions occur via iMessage." },
         "9.2": { title: "Response Requirements", text: "Commissioner communications require response within reasonable timeframe." }
       },
       "Article X: Amendments": {
-        "10.1": { title: "Amendment Process", text: "These bylaws may be amended by simple majority vote (4 out of 7 members). Amendment proposals must be submitted to commissioner in writing. Voting period: one (1) week. Amendments take effect at the start of the next season unless otherwise specified." },
+        "10.1": { title: "Amendment Process", text: "These bylaws may be amended by simple majority vote (4 out of 6 members). Amendment proposals must be submitted to commissioner in writing. Voting period: one (1) week. Amendments take effect at the start of the next season unless otherwise specified." },
         "10.2": { title: "Emergency Rule Changes", text: "Commissioner may implement emergency rules for unforeseen circumstances. Emergency rules require league ratification by simple majority within two (2) weeks. Emergency rules expire if not ratified." }
       }
     };
@@ -103,17 +103,20 @@
         "first round": ["4.2","5.2"], "first-round": ["4.2","5.2"],
         pick: ["4.1","4.2","4.3","5.3"], cap: ["5.2","6.1","6.2"],
         salary: ["5.2","6.1","6.2"], contract: ["6.1","6.2"],
+        "cap space": ["6.1"], "cap clear": ["6.1"], release: ["6.1"],
         remove: ["2.3","8.1"], kick: ["2.3","8.1"],
-        vote: ["2.3","3.2","3.3","8.2","10.1"],
+        vote: ["2.3","3.2","3.3","8.1","10.1"],
         commissioner: ["3.1","3.2","3.3","10.2"], commish: ["3.1","3.2","3.3","10.2"],
-        dispute: ["3.3","8.2"], appeal: ["3.3","8.2"],
+        dispute: ["3.3","8.1"], appeal: ["3.3","8.1"],
         rule: ["3.2","10.1","10.2"], amend: ["10.1","10.2"],
         change: ["3.2","10.1","10.2"], disconnect: ["7.2"], dc: ["7.2"],
         exploit: ["7.3"], cheat: ["7.3","5.2","8.1"],
         score: ["7.3"], "run up": ["7.3"], running: ["7.3"],
         tank: ["7.3"], suicide: ["7.3"], lose: ["7.3"],
-        warning: ["8.1"], penalty: ["8.1","8.2"], punish: ["8.1","8.2"],
-        violation: ["8.1"], collusion: ["5.2"], "fire sale": ["5.2"],
+        penalty: ["8.1"], punish: ["8.1"],
+        violation: ["7.3"], collusion: ["5.2"], "fire sale": ["5.2"],
+        position: ["7.4"], linemen: ["7.4"], "position change": ["7.4"],
+        "offensive line": ["7.4"], "defensive line": ["7.4"], reposition: ["7.4"],
         imessage: ["9.1"], message: ["9.1","9.2"],
         communicate: ["9.1","9.2"], respond: ["9.2"],
         team: ["1.2","2.1"], member: ["2.1","2.2","2.3"], replace: ["2.3"],
@@ -144,13 +147,13 @@
         reasoning = ["Section 4.2 explicitly limits any team to a maximum of two (2) first-round picks in any single draft.", "This restriction is absolute — it applies regardless of how the picks were obtained (original, traded, or compensatory).", "The offending team must trade excess first-round picks before the draft begins."];
       } else if (q.includes("exploit")) {
         verdict = "FORBIDDEN";
-        reasoning = ["Section 7.3 explicitly prohibits exploit plays.", "This constitutes a gameplay conduct violation subject to the warning system in Section 8.1.", "First offense: official warning. Third violation leads to removal from league."];
+        reasoning = ["Section 7.3 explicitly prohibits exploit plays.", "This is a gameplay conduct violation subject to commissioner enforcement.", "Penalties may be appealed to the league per Section 8.1."];
       } else if (q.includes("run") && q.includes("score")) {
         verdict = "FORBIDDEN";
-        reasoning = ["Section 7.3 prohibits running up the score, defined as achieving a 40+ point differential.", "This is a sportsmanship violation under gameplay conduct rules.", "Violators are subject to the progressive warning system in Section 8.1."];
+        reasoning = ["Section 7.3 prohibits running up the score, defined as achieving a 40+ point differential.", "This is a sportsmanship violation under gameplay conduct rules.", "Violations are subject to commissioner enforcement and may be appealed per Section 8.1."];
       } else if (q.includes("tank") || (q.includes("lose") && q.includes("purpose")) || (q.includes("intentional") && q.includes("los"))) {
         verdict = "FORBIDDEN";
-        reasoning = ["Section 7.3 prohibits 'suicide' — intentionally losing for draft position.", "This undermines competitive integrity and is treated as a serious violation.", "Subject to penalties under Section 8.1's warning system."];
+        reasoning = ["Section 7.3 prohibits 'suicide' — intentionally losing for draft position.", "This undermines competitive integrity and is treated as a serious violation.", "Subject to commissioner enforcement; penalties may be appealed per Section 8.1."];
       } else if (q.includes("collusion") || q.includes("collude")) {
         verdict = "FORBIDDEN";
         reasoning = ["Section 5.2 is unequivocal: 'Collusion in any form results in immediate removal.'", "This is the most severe penalty in the bylaws — no warnings, no appeals process specified.", "The Council views this as the gravest possible offense against the league."];
@@ -168,18 +171,25 @@
         verdict = "CONDITIONAL";
         reasoning = ["Section 7.2 states: if disconnect occurs in the first quarter, restart the game.", "The bylaws are SILENT on disconnects occurring after the first quarter.", "This is a gap in the rules. The Council recommends this be addressed via the amendment process in Article X."];
         dissent = "The silence of the bylaws on later disconnects should be interpreted as commissioner discretion under Section 3.1.";
+      } else if ((q.includes("position") || q.includes("reposition") || q.includes("linemen") || q.includes("offensive line") || q.includes("defensive line")) && !q.includes("draft")) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 7.4 permits ONLY linemen position changes — offensive line and defensive line.", "All other position changes, re-positions, or reassignments are strictly forbidden regardless of circumstance.", "If the position in question is not an offensive or defensive lineman, the answer is FORBIDDEN."];
+        dissent = "The Council notes that 'linemen' is broadly interpreted to include all OL and DL designations as recognized by Madden 26.";
+      } else if (q.includes("cap") && (q.includes("clear") || q.includes("space") || q.includes("release") || q.includes("restructure"))) {
+        verdict = "CONDITIONAL";
+        reasoning = ["Section 6.1 requires majority approval (4 out of 6 members) before executing cap space clearing actions.", "This includes releasing players or restructuring contracts primarily to free cap room.", "The intent is to prevent unilateral roster manipulation that distorts competitive balance."];
       } else if (q.includes("remove") || q.includes("kick")) {
         verdict = "CONDITIONAL";
-        reasoning = ["Section 2.3 requires a true majority vote of 5 out of 7 members for removal.", "This is a higher threshold than most other votes (which require only 4 of 7).", "Section 8.1 also provides an automatic path: three violations result in removal."];
+        reasoning = ["Section 2.3 requires a true majority vote of 4 out of 6 members for removal.", "Replacement owners must also be approved by majority vote and inherit the team as-is.", "Violations of gameplay rules are subject to commissioner enforcement and may be appealed per Section 8.1."];
       } else if (q.includes("appeal")) {
         verdict = "PERMITTED";
-        reasoning = ["Section 3.3 and 8.2 both establish appeal rights.", "Appeals require support from two (2) members to initiate.", "A simple majority vote (4 out of 7) is required to overturn a commissioner ruling or penalty."];
+        reasoning = ["Section 3.3 and 8.1 both establish appeal rights.", "Appeals require support from two (2) members to initiate.", "A simple majority vote (4 out of 6) is required to overturn a commissioner ruling or penalty."];
       } else if (q.includes("emergency")) {
         verdict = "CONDITIONAL";
         reasoning = ["Section 10.2 grants the commissioner power to implement emergency rules for unforeseen circumstances.", "However, emergency rules MUST be ratified by simple majority within two (2) weeks.", "If not ratified, emergency rules automatically expire."];
       } else if (q.includes("change") && q.includes("rule")) {
         verdict = "CONDITIONAL";
-        reasoning = ["Section 3.2 requires simple majority vote (4 out of 7) for rule changes.", "Changes must be announced one week before voting.", "Changes take effect at the start of the next season unless otherwise specified."];
+        reasoning = ["Section 3.2 requires simple majority vote (4 out of 6) for rule changes.", "Changes must be announced one week before voting.", "Changes take effect at the start of the next season unless otherwise specified."];
       } else {
         verdict = "UNDER REVIEW";
         reasoning = ["The Council has reviewed the relevant sections of the bylaws.", "This matter requires interpretation — the bylaws do not explicitly address this exact scenario.", "The Council recommends bringing this to the commissioner for a ruling under Section 3.1, with the option to appeal per Section 3.3."];
